@@ -1,7 +1,7 @@
 from pyscipopt import Model, Pricer, SCIP_RESULT, SCIP_PARAMSETTING, quicksum
 
-class CutPricer(Pricer):
 
+class CutPricer(Pricer):
     # The reduced cost function for the variable pricer
     def pricerredcost(self):
 
@@ -12,10 +12,8 @@ class CutPricer(Pricer):
 
         # Building a MIP to solve the subproblem
         subMIP = Model("CuttingStock-Sub")
-
         # Turning off presolve
         subMIP.setPresolve(SCIP_PARAMSETTING.OFF)
-
         # Setting the verbosity level to 0
         subMIP.hideOutput()
 
@@ -40,23 +38,18 @@ class CutPricer(Pricer):
         # Adding the column to the master problem
         if objval < -1e-08:
             currentNumVar = len(self.data['var'])
-
             # Creating new var; must set pricedVar to True
-            newVar = self.model.addVar("NewPattern_" + str(currentNumVar), vtype = "C", obj = 1.0, pricedVar = True)
-
+            newVar = self.model.addVar("NewPattern_" + str(currentNumVar), vtype="C", obj=1.0, pricedVar=True)
             # Adding the new variable to the constraints of the master problem
             newPattern = []
             for i, c in enumerate(self.data['cons']):
                 coeff = round(subMIP.getVal(cutWidthVars[i]))
                 self.model.addConsCoeff(c, newVar, coeff)
-
                 newPattern.append(coeff)
-
             # Storing the new variable in the pricer data.
             self.data['patterns'].append(newPattern)
             self.data['var'].append(newVar)
-
-        return {'result':SCIP_RESULT.SUCCESS}
+        return {'result': SCIP_RESULT.SUCCESS}
 
     # The initialisation function for the variable pricer to retrieve the transformed constraints of the problem
     def pricerinit(self):
@@ -67,13 +60,10 @@ class CutPricer(Pricer):
 def test_cuttingstock():
     # create solver instance
     s = Model("CuttingStock")
-
     s.setPresolve(0)
-
     # creating a pricer
     pricer = CutPricer()
     s.includePricer(pricer, "CuttingStockPricer", "Pricer to identify new cutting stock patterns")
-
     # item widths
     widths = [14, 31, 36, 45]
     # width demand
@@ -87,7 +77,6 @@ def test_cuttingstock():
     varNames = []
     varBaseName = "Pattern"
     patterns = []
-
     initialCoeffs = []
     for i in range(len(widths)):
         varNames.append(varBaseName + "_" + str(i))
@@ -139,7 +128,6 @@ def test_cuttingstock():
                 outline += str(pricer.data['patterns'][i][j]) + '\t'
             outline += 'Usage:' + str(rollUsage)
             print(outline)
-
     print('\t\t\tTotal Output:\t', '\t'.join(str(e) for e in widthOutput))
 
     assert s.getObjVal() == 452.25
