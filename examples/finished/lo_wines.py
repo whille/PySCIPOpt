@@ -15,6 +15,7 @@ Constraints correspond to the inventory of pure-grape wines.
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
 from pyscipopt import Model, quicksum, SCIP_PARAMSETTING
+from util import show_sol, show_slack
 
 # Initialize model
 model = Model("Wine blending")
@@ -53,17 +54,5 @@ for i in Grapes:
 # Objective
 model.setObjective(quicksum(Profit[j] * x[j] for j in Blends), "maximize")
 model.optimize()
-
-if model.getStatus() == "optimal":
-    print("Optimal value:", model.getObjVal())
-    for j in x:
-        print(x[j].name, "=", model.getVal(x[j]), " (reduced cost: ", model.getVarRedcost(x[j]), ")")
-    for i in c:
-        try:
-            slack, dual = model.getSlack(c[i]), model.getDualsolLinear(c[i])
-        except Exception as e:
-            slack, dual = None, None
-            print('\texception:', c[i], e)
-        print(f"{c[i].name}: slack = {slack}, dual = {dual}")
-else:
-    print("Problem could not be solved to optimality")
+show_sol(model)
+show_slack(model)

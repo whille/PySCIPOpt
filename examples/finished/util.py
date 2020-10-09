@@ -19,6 +19,7 @@ def output_model(model):
 
 
 def show_slack(model):
+    print('constrains info:')
     for c in model.getConss():
         slack, dual = model.getSlack(c), model.getDualsolLinear(c)
         print(f"{c.name}: slack = {slack:.3f}, dual = {dual:.3f}")
