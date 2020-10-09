@@ -1,18 +1,8 @@
 #!/usr/bin/python3
 # https://imada.sdu.dk/~marco/DM545/Training/dm545_lab_scip.pdf
 
-import pyscipopt as pso
 from pyscipopt import Model
-from util import show_sol, show_slack
-
-
-def change_para(model):
-    model.setPresolve(pso.SCIP_PARAMSETTING.OFF)
-    model.setHeuristics(pso.SCIP_PARAMSETTING.OFF)
-    model.disablePropagation()
-    # let’s use the primal simplex
-    model.setCharParam("lp/initalgorithm", "p")
-    model.setCharParam("lp/pricing", "f")
+from util import show_dual
 
 
 model = Model("prod", enablepricing=True)
@@ -27,7 +17,7 @@ model.addCons(6.0 * x1 + 5.0 * x2 + 10.0 * x3 <= 60.0, "c1")
 model.addCons(8.0 * x1 + 4.0 * x2 + 4.0 * x3 <= 40.0, "c2")
 model.addCons(4.0 * x1 + 5.0 * x2 + 6.0 * x3 <= 50.0, "c3")
 
-change_para(model)
-model.optimize()
-show_sol(model)
-show_slack(model)
+# let’s use the primal simplex
+model.setCharParam("lp/initalgorithm", "p")
+model.setCharParam("lp/pricing", "f")
+show_dual(model)

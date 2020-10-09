@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+import pyscipopt as pso
+
+
+def prepare_dual(model):
+    model.setPresolve(pso.SCIP_PARAMSETTING.OFF)
+    model.setHeuristics(pso.SCIP_PARAMSETTING.OFF)
+    model.disablePropagation()
 
 
 def show_sol(model):
@@ -23,3 +30,10 @@ def show_slack(model):
     for c in model.getConss():
         slack, dual = model.getSlack(c), model.getDualsolLinear(c)
         print(f"{c.name}: slack = {slack:.3f}, dual = {dual:.3f}")
+
+
+def show_dual(model):
+    prepare_dual(model)
+    model.optimize()
+    show_sol(model)
+    show_slack(model)

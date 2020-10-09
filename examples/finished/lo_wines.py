@@ -14,12 +14,11 @@ Constraints correspond to the inventory of pure-grape wines.
 
 Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 """
-from pyscipopt import Model, quicksum, SCIP_PARAMSETTING
-from util import show_sol, show_slack
+from pyscipopt import Model, quicksum
+from util import show_dual
 
 # Initialize model
 model = Model("Wine blending")
-model.setPresolve(SCIP_PARAMSETTING.OFF)
 
 Inventory = {"Alfrocheiro": 60, "Baga": 60, "Castelao": 30}
 Grapes = Inventory.keys()
@@ -53,6 +52,4 @@ for i in Grapes:
 
 # Objective
 model.setObjective(quicksum(Profit[j] * x[j] for j in Blends), "maximize")
-model.optimize()
-show_sol(model)
-show_slack(model)
+show_dual(model)
