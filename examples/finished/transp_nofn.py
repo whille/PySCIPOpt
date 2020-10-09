@@ -39,23 +39,19 @@ c = {
 }
 
 model = Model("transportation")
-
 # Create variables
 x = {}
-
 for i in I:
     for j in J:
         x[i, j] = model.addVar(vtype="C", name="x(%s,%s)" % (i, j))
 
 # Demand constraints
 for i in I:
-    model.addCons(sum(x[i, j] for j in J if (i, j) in x) == d[i],
-                  name="Demand(%s)" % i)
+    model.addCons(sum(x[i, j] for j in J if (i, j) in x) == d[i], name="Demand(%s)" % i)
 
 # Capacity constraints
 for j in J:
-    model.addCons(sum(x[i, j] for i in I if (i, j) in x) <= M[j],
-                  name="Capacity(%s)" % j)
+    model.addCons(sum(x[i, j] for i in I if (i, j) in x) <= M[j], name="Capacity(%s)" % j)
 
 # Objective
 model.setObjective(quicksum(c[i, j] * x[i, j] for (i, j) in x), "minimize")

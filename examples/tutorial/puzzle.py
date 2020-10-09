@@ -19,8 +19,9 @@ model.addCons(x + y + z == 32, name="Heads")
 
 # Set up constraint for number of legs
 model.addCons(8 * x + 4 * y + 2 * z == 80, name="Legs")
-# cons1 = model.addCons(x <= 1, modifiable=True)
-# cons2 = model.addCons(y <= 3)
+# TODO infeasible, but answers
+cons1 = model.addCons(x <= 1, modifiable=True)
+cons2 = model.addCons(y <= 3)
 
 # Set objective function
 model.setObjective(x + y, "minimize")
