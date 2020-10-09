@@ -45,4 +45,3 @@ def output():
 # Let’s print slack and dual variables
 for c in model.getConss():
     print(c.name, model.getSlack(c), model.getDualsolLinear(c))
-
