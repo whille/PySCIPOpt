@@ -50,7 +50,7 @@ def solve_kcenter(I, J, c, k, EPS=1.e-6):
 
 
 if __name__ == "__main__":
-    n = 50
+    n = 100
     m = n
     I, J, c, x_pos, y_pos = make_data(n, m, same=True)
     k = 5

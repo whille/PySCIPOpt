@@ -23,10 +23,12 @@ def kcover(I, J, c, k):
     model = Model("k-center")
     z, y, x = {}, {}, {}
     for i in I:
+        # customer i is uncovered or not
         z[i] = model.addVar(vtype="B", name="z(%s)" % i, obj=1)
     for j in J:
         y[j] = model.addVar(vtype="B", name="y(%s)" % j)
         for i in I:
+            # adjacent or not, c[i,j] <= theta
             x[i, j] = model.addVar(vtype="B", name="x(%s,%s)" % (i, j))
 
     for i in I:
@@ -56,23 +58,17 @@ def solve_kcenter(I, J, c, k, delta):
     facilities, edges = [], []
     LB = 0
     UB = max(c[i, j] for (i, j) in c)
-    model.setObjlimit(0.1)
     model.hideOutput()
-    visited = False
     while UB - LB > delta:
         theta = (UB + LB) / 2.
         print("\n\ncurrent theta:", theta)
-        if visited:
-            model.freeTransform()
-        else:
-            visited = True
+        model.freeTransform()   # to add/change constrains
         for j in J:
             for i in I:
-                if c[i, j] > theta:
+                if c[i, j] > theta:     # not adjacent
                     model.chgVarUb(x[i, j], 0.0)
                 else:
                     model.chgVarUb(x[i, j], 1.0)
-
         # model.Params.OutputFlag = 0 # silent mode
         model.setObjlimit(.1)
         model.optimize()
