@@ -58,21 +58,11 @@ def make_data():
         3: [500, 1000]
     })  # plant, capacity, fixed costs
     c = {
-        (1, 1): 4,
-        (1, 2): 6,
-        (1, 3): 9,  # transportation costs
-        (2, 1): 5,
-        (2, 2): 4,
-        (2, 3): 7,
-        (3, 1): 6,
-        (3, 2): 3,
-        (3, 3): 4,
-        (4, 1): 8,
-        (4, 2): 5,
-        (4, 3): 3,
-        (5, 1): 10,
-        (5, 2): 8,
-        (5, 3): 4,
+        (1, 1): 4, (1, 2): 6, (1, 3): 9,  # transportation costs
+        (2, 1): 5, (2, 2): 4, (2, 3): 7,
+        (3, 1): 6, (3, 2): 3, (3, 3): 4,
+        (4, 1): 8, (4, 2): 5, (4, 3): 3,
+        (5, 1): 10, (5, 2): 8, (5, 3): 4,
     }
     return I, J, d, M, f, c
 
@@ -96,7 +86,6 @@ if __name__ == "__main__":
         import matplotlib.pyplot as P
         P.clf()
         G = NX.Graph()
-
         other = [j for j in y if j not in facilities]
         customers = ["c%s" % i for i in d]
         G.add_nodes_from(facilities)
@@ -104,11 +93,9 @@ if __name__ == "__main__":
         G.add_nodes_from(customers)
         for (i, j) in edges:
             G.add_edge("c%s" % i, j)
-
         position = NX.drawing.layout.spring_layout(G)
-        NX.draw(G, position, node_color="y", nodelist=facilities)
-        NX.draw(G, position, node_color="g", nodelist=other)
-        NX.draw(G, position, node_color="b", nodelist=customers)
+        for color, group in {'y': facilities, 'g': other, 'b': customers}.items():
+            NX.draw(G, position, node_color=color, nodelist=group, with_labels=True)
         P.show()
     except ImportError:
         print("install 'networkx' and 'matplotlib' for plotting")
