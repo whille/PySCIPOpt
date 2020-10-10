@@ -68,6 +68,7 @@ def make_data():
 
 
 if __name__ == "__main__":
+    import sys
     I, J, d, M, f, c = make_data()
     model = flp(I, J, d, M, f, c)
     model.optimize()
@@ -80,6 +81,7 @@ if __name__ == "__main__":
     print("Optimal value:", model.getObjVal())
     print("Facilities at nodes:", facilities)
     print("Edges:", edges)
+    sys.exit(0)
 
     try:  # plot the result using networkx and matplotlib
         import networkx as NX
