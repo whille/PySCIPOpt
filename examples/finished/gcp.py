@@ -7,6 +7,7 @@ Copyright (c) by Joao Pedro PEDROSO and Mikio KUBO, 2012
 import time
 import sys
 from pyscipopt import Model, quicksum
+from graph_utils import make_data, show_solution
 
 
 def gcp(V, E, K):
@@ -73,23 +74,7 @@ def gcp_sos(V, E, K):
     return model
 
 
-import random
-
-
-def make_data(n, prob):
-    """make_data: prepare data for a random graph
-    Parameters:
-       - n: number of vertices
-       - prob: probability of existence of an edge, for each pair of vertices
-    Returns a tuple with a list of vertices and a list edges.
-    """
-    V = range(1, n + 1)
-    E = [(i, j) for i in V for j in V if i < j and random.random() < prob]
-    return V, E
-
-
 if __name__ == "__main__":
-    random.seed(1)
     V, E = make_data(20, .5)
     K = 10  # upper bound to the number of colors
     print("n,K=", len(V), K)
@@ -98,24 +83,14 @@ if __name__ == "__main__":
     model.optimize()
     print("Optimal value:", model.getObjVal())
     x, y = model.data
-
-    color = {}
-    dic_k = {}
-    for i in V:
-        for k in range(K):
-            if model.getVal(x[i, k]) > 0.5:
-                color[i] = k
-                dic_k.setdefault(k, [])
-                dic_k[k].append(i)
-    print("colors:", color)
-    print(f'clusters: {dic_k}')
+    show_solution(K, V, x, model)
     models = [gcp, gcp_low, gcp_sos]
     cpu = {}
     N = 10  # number of observations
     print('calc time compares(less is better):')
     print("#size\t%s\t%s\t%s" % tuple(m.__name__ for m in models))
     for size in range(10, 30):
-        print(f"size: {size}",)
+        stats = []
         K = size
         for prob in [0.1]:
             for m in models:
@@ -126,8 +101,7 @@ if __name__ == "__main__":
                     cpu[name, size, prob] = 0.
                     for t in range(N):
                         tinit = time.time()
-                        random.seed(t)
-                        V, E = make_data(size, prob)
+                        V, E = make_data(size, prob, t)
                         model = m(V, E, K)
                         model.hideOutput()  # silent mode
                         model.optimize()
@@ -137,6 +111,7 @@ if __name__ == "__main__":
                     cpu[name, size, prob] /= N
                 else:
                     cpu[name, size, prob] = "-"
-                print(cpu[name, size, prob], "\t",)
-        print()
+                stats.append(f"{cpu[name, size, prob]: .3f}")
+        s_stat = '\t'.join(stats)
+        print(f"{size}\t{s_stat}")
         sys.stdout.flush()

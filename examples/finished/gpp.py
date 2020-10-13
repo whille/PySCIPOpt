@@ -4,8 +4,8 @@
 Copyright (c) by Joao Pedro PEDROSO, Masahiro MURAMATSU and Mikio KUBO, 2012
 """
 
-import random
 from pyscipopt import Model, quicksum
+from graph_utils import make_data
 
 
 def gpp(V, E):
@@ -77,7 +77,7 @@ def gpp_qo_ps(V, E):
 
 
 def gpp_soco(V, E):
-    """gpp -- model for the graph partitioning problem in soco
+    """gpp -- model for the graph partitioning problem in soco(second order cone optimization)
     Parameters:
         - V: set/list of nodes in the graph
         - E: set/list of edges in the graph
@@ -86,12 +86,13 @@ def gpp_soco(V, E):
     model = Model("gpp model -- soco")
 
     x, s, z = {}, {}, {}
-    for i in V:
+    for i in V:   # vetex in L part
         x[i] = model.addVar(vtype="B", name="x(%s)" % i)
     for (i, j) in E:
+        # edge in same part
         s[i, j] = model.addVar(vtype="C", name="s(%s,%s)" % (i, j))
+        # edge in diff part
         z[i, j] = model.addVar(vtype="C", name="z(%s,%s)" % (i, j))
-
     model.addCons(quicksum(x[i] for i in V) == len(V) / 2, "Partition")
 
     for (i, j) in E:
@@ -117,19 +118,7 @@ def gpp_soco(V, E):
     return model
 
 
-def make_data(n, prob):
-    """make_data: prepare data for a random graph
-    Parameters:
-        - n: number of vertices
-        - prob: probability of existence of an edge, for each pair of vertices
-    Returns a tuple with a list of vertices and a list edges.
-       """
-    V = range(1, n + 1)
-    E = [(i, j) for i in V for j in V if i < j and random.random() < prob]
-    return V, E
-
-
-def show_result(model):
+def show_bipart(model):
     model.optimize()
     print("Optimal value:", model.getObjVal())
     x = model.data
@@ -139,29 +128,28 @@ def show_result(model):
 
 
 if __name__ == "__main__":
-    random.seed(1)
-    V, E = make_data(4, .5)
+    V, E = make_data(10, .5)
     print("edges:", E)
 
     print("\n\n\nStandard model:")
     model = gpp(V, E)
-    show_result(model)
+    show_bipart(model)
 
     # TODO Nonlinear objective functions are not supported
     # print("\n\n\nQuadratic optimization")
     # model = gpp_qo(V, E)
     # model.writeProblem("gpp_qo.lp")
-    # show_result(model)
+    # show_bipart(model)
 
     # print("\n\n\nQuadratic optimization - positive semidefinite")
     # model = gpp_qo_ps(V, E)
-    # show_result(model)
+    # show_bipart(model)
     # model.writeProblem("gpp_qo.lp")
 
     print("\n\n\nSecond order cone optimization")
     model = gpp_soco(V, E)
     model.optimize()
-    model.writeProblem("tmp.lp")
+    # model.writeProblem("tmp.lp")
     status = model.getStatus()
     if status == "optimal":
         print("Optimal value:", model.getObjVal())
@@ -169,7 +157,7 @@ if __name__ == "__main__":
         print("partition:")
         print([i for i in V if model.getVal(x[i]) >= .5])
         print([i for i in V if model.getVal(x[i]) < .5])
-
+        print('#Edge(i,j)\tin_same_partition\tin_diff_partition')
         for (i, j) in s:
             print("(%s,%s)\t%s\t%s" %
                   (i, j, model.getVal(s[i, j]), model.getVal(z[i, j])))
