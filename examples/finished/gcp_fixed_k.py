@@ -20,14 +20,12 @@ def gcp_fixed_k(V, E, K):
 
     x, z = {}, {}
     for i in V:
-        for k in range(K):
+        for k in range(K):      # vetex i in color k or not
             x[i, k] = model.addVar(vtype="B", name="x(%s,%s)" % (i, k))
-    for (i, j) in E:
+    for (i, j) in E:        # bad edge(same color) or not
         z[i, j] = model.addVar(vtype="B", name="z(%s,%s)" % (i, j))
     for i in V:
         model.addConsSOS1([x[i, k] for k in range(K)], name="AssignColor(%s)" % i)
-    for k in range(K - 1):
-        model.addCons(y[k] >= y[k + 1], "LowColor(%s)" % k)
     for (i, j) in E:
         for k in range(K):
             model.addCons(x[i, k] + x[j, k] <= 1 + z[i, j], "BadEdge(%s,%s,%s)" % (i, j, k))
@@ -48,14 +46,14 @@ def solve_gcp(V, E):
     best_model = None
     while UB - LB > 1:
         K = int((UB + LB) / 2)
-        print(f"try K={K}")
         gcp = gcp_fixed_k(V, E, K)
         # gcp.Params.OutputFlag = 0 # silent mode
-        # gcp.Params.Cutoff = .1
+        # gcp.setParam('lp/cutoff', .1)
         gcp.setObjlimit(0.1)
         gcp.hideOutput()
         gcp.optimize()
         status = gcp.getStatus()
+        print(f"LB={LB}, UB={UB}, K={K}, status:{status}")
         if status == "optimal":
             best_model = gcp
             UB = K

@@ -36,46 +36,6 @@ def gpp(V, E):
     return model
 
 
-def gpp_qo(V, E):
-    """gpp_qo -- quadratic optimization model for the graph partitioning problem
-    Parameters:
-        - V: set/list of nodes in the graph
-        - E: set/list of edges in the graph
-    Returns a model, ready to be solved.
-    """
-    model = Model("gpp")
-    x = {}
-    for i in V:
-        x[i] = model.addVar(vtype="B", name="x(%s)" % i)
-    model.addCons(quicksum(x[i] for i in V) == len(V) / 2, "Partition")
-    model.setObjective(
-        quicksum(x[i] * (1 - x[j]) + x[j] * (1 - x[i]) for (i, j) in E),
-        "minimize")
-    model.data = x
-    return model
-
-
-def gpp_qo_ps(V, E):
-    """gpp_qo_ps -- quadratic optimization, positive semidefinite model for the graph partitioning problem
-    Parameters:
-        - V: set/list of nodes in the graph
-        - E: set/list of edges in the graph
-    Returns a model, ready to be solved.
-    """
-    model = Model("gpp")
-
-    x = {}
-    for i in V:
-        x[i] = model.addVar(vtype="B", name="x(%s)" % i)
-
-    model.addCons(quicksum(x[i] for i in V) == len(V) / 2, "Partition")
-    model.setObjective(quicksum((x[i] - x[j]) * (x[i] - x[j]) for (i, j) in E),
-                       "minimize")
-
-    model.data = x
-    return model
-
-
 def gpp_soco(V, E):
     """gpp -- model for the graph partitioning problem in soco(second order cone optimization)
     Parameters:
@@ -86,7 +46,7 @@ def gpp_soco(V, E):
     model = Model("gpp model -- soco")
 
     x, s, z = {}, {}, {}
-    for i in V:   # vetex in L part
+    for i in V:   # vertex in L part
         x[i] = model.addVar(vtype="B", name="x(%s)" % i)
     for (i, j) in E:
         # edge in same part
@@ -118,6 +78,18 @@ def gpp_soco(V, E):
     return model
 
 
+def max_stable_set(V, E):
+    model = Model("mss model")
+    x = {}
+    for i in V:   # vertex in stable set or not
+        x[i] = model.addVar(vtype="B", name="x(%s)" % i)
+    for (i, j) in E:
+        model.addCons(x[i] + x[j] <= 1, "Edge(%s,%s)" % (i, j))
+    model.setObjective(quicksum(x[i] for i in V), "maximize")
+    model.data = x
+    return model
+
+
 def show_bipart(model):
     model.optimize()
     print("Optimal value:", model.getObjVal())
@@ -135,17 +107,6 @@ if __name__ == "__main__":
     model = gpp(V, E)
     show_bipart(model)
 
-    # TODO Nonlinear objective functions are not supported
-    # print("\n\n\nQuadratic optimization")
-    # model = gpp_qo(V, E)
-    # model.writeProblem("gpp_qo.lp")
-    # show_bipart(model)
-
-    # print("\n\n\nQuadratic optimization - positive semidefinite")
-    # model = gpp_qo_ps(V, E)
-    # show_bipart(model)
-    # model.writeProblem("gpp_qo.lp")
-
     print("\n\n\nSecond order cone optimization")
     model = gpp_soco(V, E)
     model.optimize()
@@ -161,3 +122,7 @@ if __name__ == "__main__":
         for (i, j) in s:
             print("(%s,%s)\t%s\t%s" %
                   (i, j, model.getVal(s[i, j]), model.getVal(z[i, j])))
+
+    print("\n\n\nMaximum stable set model:")
+    model = max_stable_set(V, E)
+    show_bipart(model)
