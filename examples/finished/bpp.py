@@ -85,6 +85,7 @@ def solveBinPacking(s, B, U):
     """
     model = bpp(s, B, U)
     x, y = model.data
+    model.hideOutput()
     model.optimize()
     bins = [[] for i in range(U)]
     for (i, j) in x:
@@ -102,16 +103,16 @@ def DiscreteUniform(n=10, LB=1, UB=99, B=100):
     """DiscreteUniform: create random, uniform instance for the bin packing problem."""
     import random
     random.seed(256)
-    B = 100
     s = [0] * n
     for i in range(n):
         s[i] = random.randint(LB, UB)
-    return s, B
+    return s
 
 
 if __name__ == "__main__":
-    s, B = DiscreteUniform()
-    print("items:", s)
+    n, B = 10, 100
+    s = DiscreteUniform(n, B=B)
+    print(f"{n} items: {s}")
     print("bin size:", B)
 
     ffd = FFD(s, B)
