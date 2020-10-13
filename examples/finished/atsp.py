@@ -61,13 +61,12 @@ def mtz_strong(n, c):
         for j in range(2, n + 1):
             if i != j:
                 model.addCons(
-                    u[i] - u[j] + (n - 1) * x[i, j] +
-                    (n - 3) * x[j, i] <= n - 2, "LiftedMTZ(%s,%s)" % (i, j))
-
+                    u[i] + 1 - (n - 1) * (1 - x[i, j]) +
+                    (n - 3) * x[j, i] <= u[j], "LiftedMTZ(%s,%s)" % (i, j))
     for i in range(2, n + 1):
-        model.addCons(-x[1, i] - u[i] + (n - 3) * x[i, 1] <= -2,
+        model.addCons(1 + (1 - x[1, i]) + (n - 3) * x[i, 1] <= u[i],
                       name="LiftedLB(%s)" % i)
-        model.addCons(-x[i, 1] + u[i] + (n - 3) * x[1, i] <= n - 2,
+        model.addCons(u[i] <= (n - 1) - (1 - x[i, 1]) - (n - 3) * x[1, i],
                       name="LiftedUB(%s)" % i)
     return model
 
@@ -194,6 +193,9 @@ def sequence(arcs):
 def show_sol(model):
     model.hideOutput()  # silent mode
     model.optimize()
+    if model.getStatus() != 'optimal':
+        print(model.getStatus())
+        return
     cost = model.getObjVal()
     print("Optimal value:", cost)
     for v in model.getVars():
