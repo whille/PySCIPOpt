@@ -25,7 +25,8 @@ def gcp_fixed_k(V, E, K):
     for (i, j) in E:        # bad edge(same color) or not
         z[i, j] = model.addVar(vtype="B", name="z(%s,%s)" % (i, j))
     for i in V:
-        model.addConsSOS1([x[i, k] for k in range(K)], name="AssignColor(%s)" % i)
+        model.addCons(quicksum(x[i, k] for k in range(K)) == 1, "AssignColor(%s)" % i)
+        model.addConsSOS1([x[i, k] for k in range(K)])
     for (i, j) in E:
         for k in range(K):
             model.addCons(x[i, k] + x[j, k] <= 1 + z[i, j], "BadEdge(%s,%s,%s)" % (i, j, k))
@@ -44,6 +45,7 @@ def solve_gcp(V, E):
     LB = 0
     UB = len(V)
     best_model = None
+    print('binary search:')
     while UB - LB > 1:
         K = int((UB + LB) / 2)
         gcp = gcp_fixed_k(V, E, K)
@@ -53,7 +55,7 @@ def solve_gcp(V, E):
         gcp.hideOutput()
         gcp.optimize()
         status = gcp.getStatus()
-        print(f"LB={LB}, UB={UB}, K={K}, status:{status}")
+        print(f"\tLB={LB}, UB={UB}, K={K}, status:{status}")
         if status == "optimal":
             best_model = gcp
             UB = K

@@ -63,7 +63,8 @@ def gcp_sos(V, E, K):
         for i in V:
             x[i, k] = model.addVar(vtype="B", name="x(%s,%s)" % (i, k))
     for i in V:
-        model.addConsSOS1([x[i, k] for k in range(K)], name="AssignColor(%s)" % i)
+        model.addCons(quicksum(x[i, k] for k in range(K)) == 1, "AssignColor(%s)" % i)
+        model.addConsSOS1([x[i, k] for k in range(K)])
     for (i, j) in E:
         for k in range(K):
             model.addCons(x[i, k] + x[j, k] <= y[k], "NotSameColor(%s,%s,%s)" % (i, j, k))
