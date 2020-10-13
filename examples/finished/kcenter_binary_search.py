@@ -61,7 +61,7 @@ def solve_kcenter(I, J, c, k, delta):
     model.hideOutput()
     while UB - LB > delta:
         theta = (UB + LB) / 2.
-        print("\n\ncurrent theta:", theta)
+        print("current theta:", theta)
         model.freeTransform()   # to add/change constrains
         for j in J:
             for i in I:

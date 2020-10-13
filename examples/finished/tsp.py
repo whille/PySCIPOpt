@@ -44,7 +44,7 @@ def solve_tsp(V, c):
                 quicksum(x[i, j] for i in S for j in S if j > i) <= len(S) - 1)
             # print("cut: len(%s) <= %s" % (S, len(S) - 1))
 
-    def cutting_plane(Components):
+    def cutset(Components):
         for S in Components:
             T = set(V) - set(S)
             # print("S:", S)

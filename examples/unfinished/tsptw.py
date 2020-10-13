@@ -60,7 +60,7 @@ def mtz2tw(n,c,e,l):
     Returns a model, ready to be solved.
     """
     model = Model("tsptw - mtz-strong")
-    
+
     x,u = {},{}
     for i in range(1,n+1):
         u[i] = model.addVar(lb=e[i], ub=l[i], vtype="C", name="u(%s)"%i)
@@ -103,7 +103,7 @@ def tsptw2(n,c,e,l):
     Returns a model, ready to be solved.
     """
     model = Model("tsptw2")
-    
+
     x,u = {},{}
     for i in range(1,n+1):
         for j in range(1,n+1):
