@@ -27,7 +27,7 @@ def solve_tsp(V, c):
     Returns the optimum objective value and the list of edges used.
     """
 
-    def addcut(cut_edges):
+    def addcut(cut_edges, fn_constrain):
         G = networkx.Graph()
         G.add_edges_from(cut_edges)
         Components = list(networkx.connected_components(G))
@@ -35,30 +35,25 @@ def solve_tsp(V, c):
         if len(Components) == 1:
             return False
         model.freeTransform()
+        fn_constrain(Components)
+        return True
+
+    def subtour_elim(Components):
         for S in Components:
             model.addCons(
                 quicksum(x[i, j] for i in S for j in S if j > i) <= len(S) - 1)
-            print("cut: len(%s) <= %s" % (S, len(S) - 1))
-        return True
+            # print("cut: len(%s) <= %s" % (S, len(S) - 1))
 
-    def addcut2(cut_edges):
-        G = networkx.Graph()
-        G.add_edges_from(cut_edges)
-        Components = list(networkx.connected_components(G))
-
-        if len(Components) == 1:
-            return False
-        model.freeTransform()
+    def cutting_plane(Components):
         for S in Components:
             T = set(V) - set(S)
-            print("S:", S)
-            print("T:", T)
+            # print("S:", S)
+            # print("T:", T)
             model.addCons(
                 quicksum(x[i, j] for i in S for j in T if j > i) +
                 quicksum(x[i, j] for i in T for j in S if j > i) >= 2)
-            print("cut: %s >= 2" % "+".join(
-                [("x[%s,%s]" % (i, j)) for i in S for j in T if j > i]))
-        return True
+#             print("cut: %s >= 2" % "+".join(
+#                 [("x[%s,%s]" % (i, j)) for i in S for j in T if j > i]))
 
     # main part of the solution process:
     model = Model("tsp")
@@ -83,8 +78,7 @@ def solve_tsp(V, c):
         for (i, j) in x:
             if model.getVal(x[i, j]) > EPS:
                 edges.append((i, j))
-        # if not addcut2(edges):
-        if not addcut(edges):
+        if not addcut(edges, subtour_elim):
             if isMIP:  # integer variables, components connected: solution found
                 break
             model.freeTransform()
