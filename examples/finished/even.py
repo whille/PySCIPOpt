@@ -30,7 +30,7 @@ def parity(number):
         assert number == int(round(number))
         m = Model()
         m.hideOutput()
-        
+
         ### variables are non-negative by default since 0 is the default lb.
         ### To allow for negative values, give None as lower bound
         ### (None means -infinity as lower bound and +infinity as upper bound)

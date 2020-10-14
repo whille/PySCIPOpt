@@ -94,7 +94,7 @@ class ALLDIFFconshdlr(Conshdlr):
             bottom_nodes = set(G) - top_nodes
             M = networkx.bipartite.maximum_matching(G, top_nodes) # returns dict between nodes in matching
 
-        if( len(M)/2 < len(vars) ):
+        if( len(M)/2 < len(vars)):
             #print("it is infeasible: max matching of card ", len(M), " M: ", M)
             #print("Its value graph:\nV = ", G.nodes(), "\nE = ", G.edges())
             plot_graph(G)

@@ -49,7 +49,7 @@ def solve_gcp(V, E):
     while UB - LB > 1:
         K = int((UB + LB) / 2)
         gcp = gcp_fixed_k(V, E, K)
-        # gcp.Params.OutputFlag = 0 # silent mode
+        # gcp.setParam('OutputFlag', 0)   # silent mode
         # gcp.setParam('lp/cutoff', .1)
         gcp.setObjlimit(0.1)
         gcp.hideOutput()

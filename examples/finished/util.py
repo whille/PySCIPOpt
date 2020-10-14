@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import pyscipopt as pso
 
 
 def prepare_dual(model):
+    import pyscipopt as pso
     model.setPresolve(pso.SCIP_PARAMSETTING.OFF)
     model.setHeuristics(pso.SCIP_PARAMSETTING.OFF)
     model.disablePropagation()
@@ -18,11 +18,11 @@ def show_sol(model):
         print("Problem could not be solved to optimality")
 
 
-def output_model(model):
+def output_model(model, name):
     # Write the set of SCIP parameters and their settings.
     model.writeParams("param.set")
     # Write the instantiated model to a file
-    model.writeProblem("prod1_scip.lp")     # lp format
+    model.writeProblem(f"{name}.lp")     # lp format
 
 
 def show_slack(model):

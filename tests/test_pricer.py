@@ -24,11 +24,15 @@ class CutPricer(Pricer):
         # Variables for the subMIP
         for i in range(len(dualSolutions)):
             varNames.append(varBaseName + "_" + str(i))
-            cutWidthVars.append(subMIP.addVar(varNames[i], vtype = "I", obj = -1.0 * dualSolutions[i]))
+            cutWidthVars.append(
+                subMIP.addVar(varNames[i],
+                              vtype="I",
+                              obj=-1.0 * dualSolutions[i]))
 
         # Adding the knapsack constraint
         knapsackCons = subMIP.addCons(
-            quicksum(w*v for (w,v) in zip(self.data['widths'], cutWidthVars)) <= self.data['rollLength'])
+            quicksum(w * v for (w, v) in zip(self.data['widths'], cutWidthVars))
+            <= self.data['rollLength'])
 
         # Solving the subMIP to generate the most negative reduced cost pattern
         subMIP.optimize()
@@ -39,7 +43,10 @@ class CutPricer(Pricer):
         if objval < -1e-08:
             currentNumVar = len(self.data['var'])
             # Creating new var; must set pricedVar to True
-            newVar = self.model.addVar("NewPattern_" + str(currentNumVar), vtype="C", obj=1.0, pricedVar=True)
+            newVar = self.model.addVar("NewPattern_" + str(currentNumVar),
+                                       vtype="C",
+                                       obj=1.0,
+                                       pricedVar=True)
             # Adding the new variable to the constraints of the master problem
             newPattern = []
             for i, c in enumerate(self.data['cons']):
@@ -63,7 +70,8 @@ def test_cuttingstock():
     s.setPresolve(0)
     # creating a pricer
     pricer = CutPricer()
-    s.includePricer(pricer, "CuttingStockPricer", "Pricer to identify new cutting stock patterns")
+    s.includePricer(pricer, "CuttingStockPricer",
+                    "Pricer to identify new cutting stock patterns")
     # item widths
     widths = [14, 31, 36, 45]
     # width demand
@@ -80,15 +88,17 @@ def test_cuttingstock():
     initialCoeffs = []
     for i in range(len(widths)):
         varNames.append(varBaseName + "_" + str(i))
-        cutPatternVars.append(s.addVar(varNames[i], obj = 1.0))
+        cutPatternVars.append(s.addVar(varNames[i], obj=1.0))
 
     # adding a linear constraint for the knapsack constraint
     demandCons = []
     for i in range(len(widths)):
-        numWidthsPerRoll = float(int(rollLength/widths[i]))
-        demandCons.append(s.addCons(numWidthsPerRoll*cutPatternVars[i] >= demand[i],
-                                    separate = False, modifiable = True))
-        newPattern = [0]*len(widths)
+        numWidthsPerRoll = float(int(rollLength / widths[i]))
+        demandCons.append(
+            s.addCons(numWidthsPerRoll * cutPatternVars[i] >= demand[i],
+                      separate=False,
+                      modifiable=True))
+        newPattern = [0] * len(widths)
         newPattern[i] = numWidthsPerRoll
         patterns.append(newPattern)
 
@@ -113,7 +123,7 @@ def test_cuttingstock():
     print('Demand:\t', '\t'.join(str(e) for e in demand))
 
     # print solution
-    widthOutput = [0]*len(widths)
+    widthOutput = [0] * len(widths)
     print('\nResult')
     print('======')
     print('\t\tSol Value', '\tWidths\t', printWidths)
@@ -121,16 +131,18 @@ def test_cuttingstock():
         rollUsage = 0
         solValue = round(s.getVal(pricer.data['var'][i]))
         if solValue > 0:
-            outline = 'Pattern_' + str(i) + ':\t' + str(solValue) + '\t\tCuts:\t '
+            outline = 'Pattern_' + str(i) + ':\t' + str(
+                solValue) + '\t\tCuts:\t '
             for j in range(len(widths)):
-                rollUsage += pricer.data['patterns'][i][j]*widths[j]
-                widthOutput[j] += pricer.data['patterns'][i][j]*solValue
+                rollUsage += pricer.data['patterns'][i][j] * widths[j]
+                widthOutput[j] += pricer.data['patterns'][i][j] * solValue
                 outline += str(pricer.data['patterns'][i][j]) + '\t'
             outline += 'Usage:' + str(rollUsage)
             print(outline)
     print('\t\t\tTotal Output:\t', '\t'.join(str(e) for e in widthOutput))
 
     assert s.getObjVal() == 452.25
+
 
 if __name__ == '__main__':
     test_cuttingstock()
